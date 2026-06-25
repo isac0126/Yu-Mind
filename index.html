@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 독서 마인드맵 (글자 색상 기능 추가)</title>
+    <title>나만의 독서 마인드맵 (글자 색상 및 기본 검정 추가)</title>
     
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
@@ -62,7 +62,7 @@
             border-radius: 20px;
         }
         
-        /* 레벨별 마인드맵 스타일 디자인 (색상 변경을 위해 글자색의 !important 속성 제거) */
+        /* 레벨별 마인드맵 스타일 디자인 */
         jmnode.node-root {
             background-color: #e53935 !important; 
             color: #ffffff;            
@@ -73,15 +73,15 @@
         }
         jmnode.node-sub {
             background-color: #fdd835 !important; 
-            color: #212121;            
+            color: #000000;            
             border: 2px solid #fdd835 !important;
             border-radius: 6px !important;
             font-weight: bold !important;
         }
         jmnode.node-ext {
             background-color: #ffffff !important; 
-            color: #212121;            
-            border: 2px solid #212121 !important; 
+            color: #000000; /* 기본 글자색을 완전한 검정으로 설정 */          
+            border: 2px solid #000000 !important; /* 테두리도 완전한 검정으로 통일 */
             border-radius: 4px !important;
         }
 
@@ -92,6 +92,7 @@
             border: 2px solid #4ea1d3 !important;
             border-radius: 4px;
             padding: 2px;
+            color: #000000; /* 입력할 때도 검정 글씨로 보이게 설정 */
         }
 
         /* 폰트 스타일 */
@@ -112,6 +113,7 @@
         
         <div style="display: flex; gap: 5px; align-items: center; margin-left: 5px; border-left: 2px solid #eee; padding-left: 15px; border-right: 2px solid #eee; padding-right: 15px;">
             <b>🎨 글자 색:</b>
+            <button class="btn-color" style="color: #000000; border-color: #000000;" onclick="changeTextColor('#000000')">검정</button>
             <button class="btn-color" style="color: #e53935; border-color: #e53935;" onclick="changeTextColor('#e53935')">빨강</button>
             <button class="btn-color" style="color: #8e24aa; border-color: #8e24aa;" onclick="changeTextColor('#8e24aa')">보라</button>
             <button class="btn-color" style="color: #fb8c00; border-color: #fb8c00;" onclick="changeTextColor('#fb8c00')">주황</button>
@@ -123,180 +125,5 @@
         <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
 
         <div class="help-text">
-            <strong>💡 더블클릭:</strong> 내용 수정 · 
-            <strong>Tab:</strong> 하위 추가 · 
-            <strong>Enter:</strong> 병렬 추가
-        </div>
-    </div>
-
-    <div id="jsmind_container" class="font-noto"></div>
-
-    <script>
-        var mind = {
-            "meta": { "name": "독서 마인드맵", "author": "User" },
-            "format": "node_array",
-            "data": [
-                {"id": "root", "isroot": true, "topic": "📖 책 제목"}
-            ]
-        };
-
-        var options = {
-            container: 'jsmind_container',
-            theme: 'primary',
-            editable: true,       
-            view: { hmargin: 100, vmargin: 50, line_width: 2, line_color: '#555' }
-        };
-
-        var jm = new jsMind(options);
-        jm.show(mind);
-
-        // 실시간 노드 스타일 감지
-        var observer = new MutationObserver(function(mutations) {
-            observer.disconnect(); 
-            
-            var jmnodes = document.querySelectorAll('jmnode');
-            jmnodes.forEach(function(el) {
-                var nodeid = el.getAttribute('nodeid');
-                if (nodeid && jm && jm.mind && jm.mind.nodes) {
-                    var node = jm.mind.nodes[nodeid];
-                    if (node) {
-                        var targetClass = '';
-                        if (node.isroot) {
-                            targetClass = 'node-root';
-                        } else if (node.parent && node.parent.isroot) {
-                            targetClass = 'node-sub';
-                        } else {
-                            targetClass = 'node-ext';
-                        }
-                        
-                        if (!el.classList.contains(targetClass)) {
-                            el.classList.remove('node-root', 'node-sub', 'node-ext');
-                            el.classList.add(targetClass);
-                        }
-                    }
-                }
-            });
-            
-            observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true });
-        });
-
-        observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true });
-
-        // [핵심 추가] 글자 색상 변경 함수
-        function changeTextColor(color) {
-            var selected_node = jm.get_selected_node();
-            if (!selected_node) {
-                alert("색상을 변경할 토픽을 먼저 마우스로 클릭해서 선택해주세요!");
-                return;
-            }
-            
-            var el = document.querySelector('jmnode[nodeid="' + selected_node.id + '"]');
-            
-            if (color === 'default') {
-                selected_node.data['foreground-color'] = ''; // 파일 저장용 데이터 초기화
-                if (el) el.style.color = ''; // 화면 즉시 반영
-            } else {
-                selected_node.data['foreground-color'] = color; // 파일 저장용 데이터 기록
-                if (el) el.style.color = color; // 화면 즉시 반영
-            }
-        }
-
-        // 더블클릭 시 편집 모드 실행
-        document.getElementById('jsmind_container').addEventListener('dblclick', function(e) {
-            var target = e.target;
-            var jmnode = target.closest('jmnode'); 
-            
-            if (jmnode) {
-                var nodeid = jmnode.getAttribute('nodeid');
-                if (nodeid) {
-                    jm.select_node(nodeid);
-                    setTimeout(function() { jm.begin_edit(nodeid); }, 50);
-                }
-            }
-        });
-
-        // 폰트 및 저장/불러오기 기능
-        function changeFont() {
-            var selectedFont = document.getElementById('font-selector').value;
-            var container = document.getElementById('jsmind_container');
-            container.className = ''; 
-            container.classList.add(selectedFont); 
-        }
-
-        function saveMindMap() {
-            var mind_data = jm.get_data('node_array');
-            var data_string = JSON.stringify(mind_data, null, 2);
-            var blob = new Blob([data_string], { type: "application/json" });
-            var url = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            var today = new Date().toISOString().slice(0, 10);
-            a.download = "독서_마인드맵_" + today + ".json";
-            a.href = url;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function triggerFileInput() {
-            document.getElementById('file-input').click();
-        }
-
-        function loadMindMap(event) {
-            var file = event.target.files[0];
-            if (!file) return;
-            var reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    var mind_data = JSON.parse(e.target.result);
-                    jm.show(mind_data);
-                } catch (err) {
-                    alert("올바르지 않은 마인드맵 파일입니다.");
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        // 단축키 로직
-        document.getElementById('jsmind_container').addEventListener('keydown', function(e) {
-            var activeEl = document.activeElement;
-            var isEditing = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
-
-            if (isEditing) {
-                if (e.key === 'Enter') {
-                    if (e.isComposing || e.keyCode === 229) { return; }
-                    activeEl.blur(); 
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            } else {
-                var selected_node = jm.get_selected_node();
-                if (selected_node) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        var new_id = jsMind.util.uuid.newid();
-                        if (selected_node.isroot) {
-                            jm.add_node(selected_node, new_id, '새 토픽');
-                        } else {
-                            jm.insert_node_after(selected_node, new_id, '새 토픽');
-                        }
-                        jm.select_node(new_id);
-                        setTimeout(function() { jm.begin_edit(new_id); }, 50);
-                    } else if (e.key === 'Tab') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        var new_id = jsMind.util.uuid.newid();
-                        jm.add_node(selected_node, new_id, '새 토픽');
-                        jm.select_node(new_id);
-                        setTimeout(function() { jm.begin_edit(new_id); }, 50);
-                    } else if (e.key === 'Backspace' || e.key === 'Delete') {
-                        if (!selected_node.isroot) {
-                            jm.remove_node(selected_node);
-                        }
-                    }
-                }
-            }
-        }, true);
-    </script>
-</body>
-</html>
+            <strong>💡 더블클릭:</strong> 수정 · 
+            <strong>Tab:</strong> 하위 추가 ·
