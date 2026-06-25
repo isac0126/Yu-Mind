@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 독서 마인드맵</title>
+    <title>나만의 독서 마인드맵 (글자 색상 기능 추가)</title>
     
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
@@ -48,6 +48,11 @@
         .btn-save:hover { background-color: #3b8dbd; border-color: #3b8dbd; color: white; }
         .btn-load { background-color: #6c757d; color: white; border-color: #6c757d; font-weight: bold; }
         .btn-load:hover { background-color: #5a6268; border-color: #5a6268; color: white; }
+        
+        /* 색상 변경 버튼 전용 스타일 */
+        .btn-color { padding: 6px 10px; border: 2px solid; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .btn-color:hover { opacity: 0.7; background-color: #fff; }
+
         .help-text { 
             font-size: 14px; 
             color: #555; 
@@ -57,10 +62,10 @@
             border-radius: 20px;
         }
         
-        /* 레벨별 마인드맵 스타일 디자인 */
+        /* 레벨별 마인드맵 스타일 디자인 (색상 변경을 위해 글자색의 !important 속성 제거) */
         jmnode.node-root {
             background-color: #e53935 !important; 
-            color: #ffffff !important;            
+            color: #ffffff;            
             border: 2px solid #e53935 !important;
             border-radius: 8px !important;
             font-weight: bold !important;
@@ -68,14 +73,14 @@
         }
         jmnode.node-sub {
             background-color: #fdd835 !important; 
-            color: #212121 !important;            
+            color: #212121;            
             border: 2px solid #fdd835 !important;
             border-radius: 6px !important;
             font-weight: bold !important;
         }
         jmnode.node-ext {
             background-color: #ffffff !important; 
-            color: #212121 !important;            
+            color: #212121;            
             border: 2px solid #212121 !important; 
             border-radius: 4px !important;
         }
@@ -98,21 +103,29 @@
 <body>
 
     <div id="toolbar">
-        <label for="font-selector"><b>✍️ 폰트 선택:</b></label>
+        <label for="font-selector"><b>✍️ 폰트:</b></label>
         <select id="font-selector" onchange="changeFont()">
-            <option value="font-noto">노토 산스 (깔끔한 기본)</option>
-            <option value="font-myeongjo">나눔 명조 (차분한 독서 감성)</option>
-            <option value="font-pen">나눔 펜 스크립트 (다이어리 손글씨 느낌)</option>
+            <option value="font-noto">노토 산스</option>
+            <option value="font-myeongjo">나눔 명조</option>
+            <option value="font-pen">나눔 펜 스크립트</option>
         </select>
         
-        <button class="btn-save" onclick="saveMindMap()">💾 파일로 저장하기</button>
-        <button class="btn-load" onclick="triggerFileInput()">📂 파일 불러오기</button>
+        <div style="display: flex; gap: 5px; align-items: center; margin-left: 5px; border-left: 2px solid #eee; padding-left: 15px; border-right: 2px solid #eee; padding-right: 15px;">
+            <b>🎨 글자 색:</b>
+            <button class="btn-color" style="color: #e53935; border-color: #e53935;" onclick="changeTextColor('#e53935')">빨강</button>
+            <button class="btn-color" style="color: #8e24aa; border-color: #8e24aa;" onclick="changeTextColor('#8e24aa')">보라</button>
+            <button class="btn-color" style="color: #fb8c00; border-color: #fb8c00;" onclick="changeTextColor('#fb8c00')">주황</button>
+            <button class="btn-color" style="color: #212121; border-color: #bbb;" onclick="changeTextColor('default')">기본</button>
+        </div>
+
+        <button class="btn-save" onclick="saveMindMap()">💾 저장</button>
+        <button class="btn-load" onclick="triggerFileInput()">📂 불러오기</button>
         <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
 
         <div class="help-text">
             <strong>💡 더블클릭:</strong> 내용 수정 · 
             <strong>Tab:</strong> 하위 추가 · 
-            <strong>Enter:</strong> 완료/병렬 추가
+            <strong>Enter:</strong> 병렬 추가
         </div>
     </div>
 
@@ -169,6 +182,25 @@
 
         observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true });
 
+        // [핵심 추가] 글자 색상 변경 함수
+        function changeTextColor(color) {
+            var selected_node = jm.get_selected_node();
+            if (!selected_node) {
+                alert("색상을 변경할 토픽을 먼저 마우스로 클릭해서 선택해주세요!");
+                return;
+            }
+            
+            var el = document.querySelector('jmnode[nodeid="' + selected_node.id + '"]');
+            
+            if (color === 'default') {
+                selected_node.data['foreground-color'] = ''; // 파일 저장용 데이터 초기화
+                if (el) el.style.color = ''; // 화면 즉시 반영
+            } else {
+                selected_node.data['foreground-color'] = color; // 파일 저장용 데이터 기록
+                if (el) el.style.color = color; // 화면 즉시 반영
+            }
+        }
+
         // 더블클릭 시 편집 모드 실행
         document.getElementById('jsmind_container').addEventListener('dblclick', function(e) {
             var target = e.target;
@@ -178,14 +210,12 @@
                 var nodeid = jmnode.getAttribute('nodeid');
                 if (nodeid) {
                     jm.select_node(nodeid);
-                    setTimeout(function() {
-                        jm.begin_edit(nodeid);
-                    }, 50);
+                    setTimeout(function() { jm.begin_edit(nodeid); }, 50);
                 }
             }
         });
 
-        // 기능 버튼
+        // 폰트 및 저장/불러오기 기능
         function changeFont() {
             var selectedFont = document.getElementById('font-selector').value;
             var container = document.getElementById('jsmind_container');
