@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 독서 마인드맵 (다중 선택 완벽 지원)</title>
+    <title>나만의 독서 마인드맵 (오류 완벽 해결 및 다중 선택)</title>
     
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
@@ -11,6 +11,8 @@
     <style>
         body { margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
         #toolbar { padding: 12px 20px; background: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center; z-index: 10; position: relative; flex-wrap: wrap; }
+        
+        /* 마인드맵 도화지 영역 */
         #jsmind_container { width: 100vw; height: calc(100vh - 65px); background: #f4f5f7; position: relative; }
         
         .jsmind-inner { cursor: grab; }
@@ -29,9 +31,14 @@
 
         .help-text { font-size: 13px; color: #555; margin-left: auto; background: #eef2f5; padding: 8px 15px; border-radius: 20px; }
         
+        /* 토픽 디자인 */
         jmnode.node-root { background-color: #e53935 !important; color: #ffffff; border: 2px solid #e53935 !important; border-radius: 8px !important; font-weight: bold !important; box-shadow: 0 3px 6px rgba(0,0,0,0.16) !important; }
         jmnode.node-sub { background-color: #fdd835 !important; color: #000000; border: 2px solid #fdd835 !important; border-radius: 6px !important; font-weight: bold !important; }
         jmnode.node-ext { background-color: #ffffff !important; color: #000000; border: 2px solid #000000 !important; border-radius: 4px !important; }
 
-        /* [핵심 추가] 다중 선택된 노드 강조 효과 */
-        jmnode.multi-selected { outline: 3px solid #4ea1d3 !important; outline-offset: 2px; box-shadow: 0 0 10px rgba(78,161,211
+        /* 다중 선택 효과 */
+        jmnode.multi-selected { outline: 3px solid #4ea1d3 !important; outline-offset: 2px; box-shadow: 0 0 10px rgba(78,161,211,0.5) !important; }
+
+        .jsmind-editor { min-width: 100px !important; font-family: inherit !important; border: 2px solid #4ea1d3 !important; border-radius: 4px; padding: 2px; color: #000000; }
+        .font-noto jmnode { font-family: 'Noto Sans KR', sans-serif !important; }
+        .font-myeongjo jmnode { font-family: 'Nanum Myeongjo', serif !important; font
