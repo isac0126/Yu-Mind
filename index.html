@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 독서 마인드맵 (자동 컬러 테마 추가)</title>
+    <title>나만의 독서 마인드맵 (더블클릭 편집 완벽 호환)</title>
     
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
@@ -57,30 +57,30 @@
             border-radius: 20px;
         }
         
-        /* --- [핵심 수정] 레벨별 마인드맵 스타일 디자인 --- */
+        /* 레벨별 마인드맵 스타일 디자인 */
         jmnode.node-root {
-            background-color: #e53935 !important; /* 메인: 빨강색 바탕 */
-            color: #ffffff !important;            /* 흰색 글씨 */
+            background-color: #e53935 !important; 
+            color: #ffffff !important;            
             border: 2px solid #e53935 !important;
             border-radius: 8px !important;
             font-weight: bold !important;
             box-shadow: 0 3px 6px rgba(0,0,0,0.16) !important;
         }
         jmnode.node-sub {
-            background-color: #fdd835 !important; /* 서브: 노랑색 바탕 */
-            color: #212121 !important;            /* 검은색 글씨 */
+            background-color: #fdd835 !important; 
+            color: #212121 !important;            
             border: 2px solid #fdd835 !important;
             border-radius: 6px !important;
             font-weight: bold !important;
         }
         jmnode.node-ext {
-            background-color: #ffffff !important; /* 확장: 흰색 바탕 */
-            color: #212121 !important;            /* 검은색 글씨 */
-            border: 2px solid #212121 !important; /* 검은색 테두리 */
+            background-color: #ffffff !important; 
+            color: #212121 !important;            
+            border: 2px solid #212121 !important; 
             border-radius: 4px !important;
         }
 
-        /* 폰트 스타일 선언 */
+        /* 폰트 스타일 */
         .font-noto jmnode { font-family: 'Noto Sans KR', sans-serif !important; }
         .font-myeongjo jmnode { font-family: 'Nanum Myeongjo', serif !important; font-size: 15px !important; }
         .font-pen jmnode { font-family: 'Nanum Pen Script', cursive !important; font-size: 22px !important; }
@@ -101,10 +101,9 @@
         <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
 
         <div class="help-text">
-            <strong>💡 스마트 입력:</strong> 
-            <code>Tab</code> (하위/직렬 추가) · 
-            <code>Enter</code> (완료/형제 추가) · 
-            <code>Delete</code> (삭제)
+            <strong>💡 더블클릭:</strong> 내용 수정 · 
+            <strong>Tab:</strong> 하위 추가 · 
+            <strong>Enter:</strong> 완료/병렬 추가
         </div>
     </div>
 
@@ -129,10 +128,9 @@
         var jm = new jsMind(options);
         jm.show(mind);
 
-        // --- [핵심 추가] 실시간 노드 스타일 감지 및 자동 부여 로직 ---
-        // 마인드맵 구조가 변경되거나 생성될 때 노드의 위치를 파악해 자동으로 테마 클래스를 입힙니다.
+        // 실시간 노드 스타일 (자동 색상) 로직
         var observer = new MutationObserver(function(mutations) {
-            observer.disconnect(); // 무한 루프 방지용 임시 차단
+            observer.disconnect(); 
             
             var jmnodes = document.querySelectorAll('jmnode');
             jmnodes.forEach(function(el) {
@@ -157,13 +155,29 @@
                 }
             });
             
-            // 감지 재시작
             observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true });
         });
 
         observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true });
 
-        // 기존 폰트 및 저장/불러오기 기능 유지
+        // --- [핵심 추가] 더블클릭 시 무조건 편집 모드(입력창) 강제 실행 ---
+        document.getElementById('jsmind_container').addEventListener('dblclick', function(e) {
+            var target = e.target;
+            var jmnode = target.closest('jmnode'); // 클릭한 곳에서 가장 가까운 노드(상자) 찾기
+            
+            if (jmnode) {
+                var nodeid = jmnode.getAttribute('nodeid');
+                if (nodeid) {
+                    jm.select_node(nodeid);
+                    // 브라우저의 기본 동작과 충돌하지 않도록 아주 미세한 시간 차이를 두고 실행
+                    setTimeout(function() {
+                        jm.begin_edit(nodeid);
+                    }, 10);
+                }
+            }
+        });
+
+        // 폰트 및 저장/불러오기 기능
         function changeFont() {
             var selectedFont = document.getElementById('font-selector').value;
             var container = document.getElementById('jsmind_container');
@@ -229,14 +243,19 @@
                             jm.insert_node_after(selected_node, new_id, '');
                         }
                         jm.select_node(new_id);
-                        jm.begin_edit(new_id);
+                        setTimeout(function() { jm.begin_edit(new_id); }, 10);
                     } else if (e.key === 'Tab') {
                         e.preventDefault();
                         e.stopPropagation();
                         var new_id = jsMind.util.uuid.newid();
                         jm.add_node(selected_node, new_id, '');
                         jm.select_node(new_id);
-                        jm.begin_edit(new_id);
+                        setTimeout(function() { jm.begin_edit(new_id); }, 10);
+                    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                        // 노드 삭제 단축키 추가
+                        if (!selected_node.isroot) {
+                            jm.remove_node(selected_node);
+                        }
                     }
                 }
             }
