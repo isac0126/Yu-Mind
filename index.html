@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>나만의 독서 마인드맵 (글자 색상 및 기본 검정 추가)</title>
+    <title>나만의 독서 마인드맵 (화면 이동 & 화살표 연결 완벽 지원)</title>
     
     <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
@@ -15,13 +15,14 @@
             padding: 0; 
             background-color: #f8f9fa; 
             font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden; /* 전체 페이지 스크롤 방지 */
         }
         #toolbar { 
-            padding: 15px 20px; 
+            padding: 12px 20px; 
             background: #ffffff; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
             display: flex; 
-            gap: 15px; 
+            gap: 12px; 
             align-items: center; 
             z-index: 10; 
             position: relative; 
@@ -32,29 +33,39 @@
             height: calc(100vh - 65px); 
             background: #f4f5f7; 
         }
+        
+        /* [핵심 추가] 바탕 화면 드래그 커서 설정 */
+        .jsmind-inner {
+            cursor: grab; /* 평소엔 손바닥 모양 */
+        }
+        .jsmind-inner:active {
+            cursor: grabbing; /* 클릭 중일 땐 주먹 쥔 모양 */
+        }
+        
         select, button { 
-            padding: 8px 12px; 
+            padding: 7px 10px; 
             border: 1px solid #ddd; 
             border-radius: 6px; 
             font-family: inherit; 
-            font-size: 14px; 
+            font-size: 13px; 
             cursor: pointer; 
             outline: none;
             background-color: #fff;
             transition: all 0.2s;
         }
         button:hover { background-color: #f0f0f0; border-color: #bbb; }
+        
+        /* 버튼 디자인 모음 */
         .btn-save { background-color: #4ea1d3; color: white; border-color: #4ea1d3; font-weight: bold; }
         .btn-save:hover { background-color: #3b8dbd; border-color: #3b8dbd; color: white; }
         .btn-load { background-color: #6c757d; color: white; border-color: #6c757d; font-weight: bold; }
         .btn-load:hover { background-color: #5a6268; border-color: #5a6268; color: white; }
-        
-        /* 색상 변경 버튼 전용 스타일 */
-        .btn-color { padding: 6px 10px; border: 2px solid; border-radius: 4px; font-weight: bold; font-size: 13px; }
+        .btn-color { padding: 4px 8px; border: 2px solid; border-radius: 4px; font-weight: bold; font-size: 12px; }
         .btn-color:hover { opacity: 0.7; background-color: #fff; }
+        .btn-zoom { background-color: #eef2f5; font-weight: bold; color: #333; border-color: #d1d9e0;}
 
         .help-text { 
-            font-size: 14px; 
+            font-size: 13px; 
             color: #555; 
             margin-left: auto; 
             background: #eef2f5;
@@ -62,38 +73,13 @@
             border-radius: 20px;
         }
         
-        /* 레벨별 마인드맵 스타일 디자인 */
-        jmnode.node-root {
-            background-color: #e53935 !important; 
-            color: #ffffff;            
-            border: 2px solid #e53935 !important;
-            border-radius: 8px !important;
-            font-weight: bold !important;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.16) !important;
-        }
-        jmnode.node-sub {
-            background-color: #fdd835 !important; 
-            color: #000000;            
-            border: 2px solid #fdd835 !important;
-            border-radius: 6px !important;
-            font-weight: bold !important;
-        }
-        jmnode.node-ext {
-            background-color: #ffffff !important; 
-            color: #000000; /* 기본 글자색을 완전한 검정으로 설정 */          
-            border: 2px solid #000000 !important; /* 테두리도 완전한 검정으로 통일 */
-            border-radius: 4px !important;
-        }
+        /* 레벨별 마인드맵 테마 */
+        jmnode.node-root { background-color: #e53935 !important; color: #ffffff; border: 2px solid #e53935 !important; border-radius: 8px !important; font-weight: bold !important; box-shadow: 0 3px 6px rgba(0,0,0,0.16) !important; }
+        jmnode.node-sub { background-color: #fdd835 !important; color: #000000; border: 2px solid #fdd835 !important; border-radius: 6px !important; font-weight: bold !important; }
+        jmnode.node-ext { background-color: #ffffff !important; color: #000000; border: 2px solid #000000 !important; border-radius: 4px !important; }
 
-        /* 텍스트 입력창이 0px로 쪼그라드는 것을 방지 */
-        .jsmind-editor {
-            min-width: 100px !important;
-            font-family: inherit !important;
-            border: 2px solid #4ea1d3 !important;
-            border-radius: 4px;
-            padding: 2px;
-            color: #000000; /* 입력할 때도 검정 글씨로 보이게 설정 */
-        }
+        /* 텍스트 입력창 오류 방지 */
+        .jsmind-editor { min-width: 100px !important; font-family: inherit !important; border: 2px solid #4ea1d3 !important; border-radius: 4px; padding: 2px; color: #000000; }
 
         /* 폰트 스타일 */
         .font-noto jmnode { font-family: 'Noto Sans KR', sans-serif !important; }
@@ -111,8 +97,8 @@
             <option value="font-pen">나눔 펜 스크립트</option>
         </select>
         
-        <div style="display: flex; gap: 5px; align-items: center; margin-left: 5px; border-left: 2px solid #eee; padding-left: 15px; border-right: 2px solid #eee; padding-right: 15px;">
-            <b>🎨 글자 색:</b>
+        <div style="display: flex; gap: 5px; align-items: center; margin-left: 5px; border-left: 2px solid #eee; padding-left: 10px;">
+            <b>🎨 색상:</b>
             <button class="btn-color" style="color: #000000; border-color: #000000;" onclick="changeTextColor('#000000')">검정</button>
             <button class="btn-color" style="color: #e53935; border-color: #e53935;" onclick="changeTextColor('#e53935')">빨강</button>
             <button class="btn-color" style="color: #8e24aa; border-color: #8e24aa;" onclick="changeTextColor('#8e24aa')">보라</button>
@@ -120,10 +106,297 @@
             <button class="btn-color" style="color: #212121; border-color: #bbb;" onclick="changeTextColor('default')">기본</button>
         </div>
 
+        <div style="display: flex; gap: 5px; margin-left: 5px; border-left: 2px solid #eee; padding-left: 10px; border-right: 2px solid #eee; padding-right: 10px;">
+            <button class="btn-zoom" onclick="jm.view.zoomIn()">➕ 확대</button>
+            <button class="btn-zoom" onclick="jm.view.zoomOut()">➖ 축소</button>
+        </div>
+
         <button class="btn-save" onclick="saveMindMap()">💾 저장</button>
         <button class="btn-load" onclick="triggerFileInput()">📂 불러오기</button>
         <input type="file" id="file-input" accept=".json" style="display: none;" onchange="loadMindMap(event)">
 
         <div class="help-text">
-            <strong>💡 더블클릭:</strong> 수정 · 
-            <strong>Tab:</strong> 하위 추가 ·
+            <strong>💡 단축키:</strong> 바탕 드래그(이동) · <code>Shift+클릭</code> (화살표 연결)
+        </div>
+    </div>
+
+    <div id="jsmind_container" class="font-noto"></div>
+
+    <script>
+        var mind = {
+            "meta": { "name": "독서 마인드맵", "author": "User" },
+            "format": "node_array",
+            "data": [
+                {"id": "root", "isroot": true, "topic": "📖 책 제목"}
+            ]
+        };
+
+        var options = {
+            container: 'jsmind_container',
+            theme: 'primary',
+            editable: true,       
+            view: { hmargin: 100, vmargin: 50, line_width: 2, line_color: '#555' }
+        };
+
+        var jm = new jsMind(options);
+        jm.show(mind);
+
+        // 화살표 선 데이터를 저장할 전역 변수
+        window.customLines = [];
+
+        // --- [핵심 추가 1] 드래그로 화면 이동하기 (Panning) ---
+        function initPanning() {
+            let container = document.getElementById('jsmind_container');
+            let inner = container.querySelector('.jsmind-inner');
+            if(!inner) return;
+
+            let isDragging = false;
+            let startX, startY, scrollLeft, scrollTop;
+
+            inner.addEventListener('mousedown', (e) => {
+                // 토픽(노드)을 클릭했을 때는 이동 방지 (노드 선택/편집을 위해)
+                if (e.target.tagName.toLowerCase() === 'jmnode' || e.target.closest('jmnode')) return;
+                
+                isDragging = true;
+                startX = e.pageX - inner.offsetLeft;
+                startY = e.pageY - inner.offsetTop;
+                scrollLeft = inner.scrollLeft;
+                scrollTop = inner.scrollTop;
+            });
+
+            inner.addEventListener('mouseleave', () => { isDragging = false; });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+
+            inner.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                e.preventDefault();
+                const x = e.pageX - inner.offsetLeft;
+                const y = e.pageY - inner.offsetTop;
+                inner.scrollLeft = scrollLeft - (x - startX);
+                inner.scrollTop = scrollTop - (y - startY);
+            });
+        }
+        initPanning(); // 초기 실행
+
+        // --- [핵심 추가 2] 관계선(화살표) 그리기 엔진 ---
+        function drawCustomLines() {
+            let jmnodes = document.querySelector('jmnodes');
+            if (!jmnodes) return;
+
+            let svg = document.getElementById('custom-lines-svg');
+            if (!svg) {
+                // SVG 레이어 최초 생성
+                svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.id = 'custom-lines-svg';
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.left = '0';
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.style.pointerEvents = 'none'; // 마우스 클릭 방해 금지
+                svg.style.zIndex = '0'; // 일반 트리 선보다 위, 글자보다 아래
+                
+                // 화살표 촉 디자인
+                let defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                defs.innerHTML = `<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#8e24aa" /></marker>`;
+                svg.appendChild(defs);
+                
+                jmnodes.insertBefore(svg, jmnodes.firstChild);
+            }
+            
+            // 기존 선 지우기 (새로 그리기 위해)
+            svg.querySelectorAll('path').forEach(p => p.remove());
+
+            // 캔버스 크기 동기화
+            svg.style.width = jmnodes.style.width;
+            svg.style.height = jmnodes.style.height;
+
+            if(!window.customLines) return;
+
+            // 저장된 선 데이터 기반으로 새로 그리기
+            window.customLines.forEach(line => {
+                let n1 = document.querySelector(`jmnode[nodeid="${line.source}"]`);
+                let n2 = document.querySelector(`jmnode[nodeid="${line.target}"]`);
+                if (n1 && n2) {
+                    let x1 = n1.offsetLeft + (n1.offsetWidth / 2);
+                    let y1 = n1.offsetTop + (n1.offsetHeight / 2);
+                    let x2 = n2.offsetLeft + (n2.offsetWidth / 2);
+                    let y2 = n2.offsetTop + (n2.offsetHeight / 2);
+
+                    let path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    let dx = x2 - x1;
+                    
+                    // 예쁜 곡선을 만들기 위한 조절점 (베지에 곡선)
+                    let cx1 = x1 + dx/3;
+                    let cy1 = y1 - 80; 
+                    let cx2 = x2 - dx/3;
+                    let cy2 = y2 - 80;
+
+                    path.setAttribute('d', `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`);
+                    path.setAttribute('fill', 'none');
+                    path.setAttribute('stroke', '#8e24aa'); // 보라색 선
+                    path.setAttribute('stroke-width', '2');
+                    path.setAttribute('stroke-dasharray', '5,5'); // 점선 스타일
+                    path.setAttribute('marker-end', 'url(#arrowhead)');
+                    svg.appendChild(path);
+                }
+            });
+        }
+
+        // --- [핵심 추가 3] Shift + 클릭으로 화살표 연결하기 ---
+        let linkingSource = null;
+        document.getElementById('jsmind_container').addEventListener('click', function(e) {
+            if (e.shiftKey) {
+                let jmnode = e.target.closest('jmnode');
+                if (jmnode) {
+                    let id = jmnode.getAttribute('nodeid');
+                    if (!linkingSource) {
+                        // 첫 번째 토픽 선택 (시작점)
+                        linkingSource = id;
+                        jmnode.style.outline = '3px dashed #8e24aa'; // 선택 효과
+                        jmnode.style.outlineOffset = '2px';
+                    } else {
+                        // 두 번째 토픽 선택 (도착점)
+                        if (linkingSource !== id) {
+                            // 이미 선이 있는지 확인하여 있으면 삭제(토글), 없으면 추가
+                            let existingIndex = window.customLines.findIndex(l => 
+                                (l.source === linkingSource && l.target === id) || 
+                                (l.target === linkingSource && l.source === id)
+                            );
+                            if (existingIndex > -1) {
+                                window.customLines.splice(existingIndex, 1);
+                            } else {
+                                window.customLines.push({source: linkingSource, target: id});
+                            }
+                            drawCustomLines();
+                        }
+                        // 선택 효과 해제
+                        let srcNode = document.querySelector(`jmnode[nodeid="${linkingSource}"]`);
+                        if(srcNode) srcNode.style.outline = '';
+                        linkingSource = null;
+                    }
+                }
+            } else {
+                // Shift를 누르지 않고 다른 곳을 클릭하면 연결 취소
+                if (linkingSource) {
+                    let srcNode = document.querySelector(`jmnode[nodeid="${linkingSource}"]`);
+                    if(srcNode) srcNode.style.outline = '';
+                    linkingSource = null;
+                }
+            }
+        });
+
+        // 실시간 노드 스타일 및 줌/이동 감지하여 선 다시 그리기
+        var observer = new MutationObserver(function(mutations) {
+            observer.disconnect(); 
+            
+            var jmnodes = document.querySelectorAll('jmnode');
+            jmnodes.forEach(function(el) {
+                var nodeid = el.getAttribute('nodeid');
+                if (nodeid && jm && jm.mind && jm.mind.nodes) {
+                    var node = jm.mind.nodes[nodeid];
+                    if (node) {
+                        var targetClass = '';
+                        if (node.isroot) { targetClass = 'node-root'; } 
+                        else if (node.parent && node.parent.isroot) { targetClass = 'node-sub'; } 
+                        else { targetClass = 'node-ext'; }
+                        
+                        if (!el.classList.contains(targetClass)) {
+                            el.classList.remove('node-root', 'node-sub', 'node-ext');
+                            el.classList.add(targetClass);
+                        }
+                    }
+                }
+            });
+            
+            drawCustomLines(); // 구조 변경 시 화살표도 갱신
+            
+            // 화면 이동(style), 클래스 변경 등을 계속 추적
+            observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+        });
+        observer.observe(document.getElementById('jsmind_container'), { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+
+        // 더블클릭 시 편집 모드 실행
+        document.getElementById('jsmind_container').addEventListener('dblclick', function(e) {
+            var target = e.target;
+            var jmnode = target.closest('jmnode'); 
+            if (jmnode) {
+                var nodeid = jmnode.getAttribute('nodeid');
+                if (nodeid) {
+                    jm.select_node(nodeid);
+                    setTimeout(function() { jm.begin_edit(nodeid); }, 50);
+                }
+            }
+        });
+
+        // 기능 함수들
+        function changeTextColor(color) {
+            var selected_node = jm.get_selected_node();
+            if (!selected_node) return alert("색상을 변경할 토픽을 선택해주세요!");
+            var el = document.querySelector('jmnode[nodeid="' + selected_node.id + '"]');
+            
+            if (color === 'default') {
+                selected_node.data['foreground-color'] = ''; 
+                if (el) el.style.color = ''; 
+            } else {
+                selected_node.data['foreground-color'] = color; 
+                if (el) el.style.color = color; 
+            }
+        }
+
+        function changeFont() {
+            var selectedFont = document.getElementById('font-selector').value;
+            var container = document.getElementById('jsmind_container');
+            container.className = ''; 
+            container.classList.add(selectedFont); 
+        }
+
+        // [핵심 변경] 저장 시 화살표 데이터(lines)도 함께 묶어서 저장
+        function saveMindMap() {
+            var mind_data = jm.get_data('node_array');
+            var exportData = {
+                mind: mind_data,
+                lines: window.customLines || []
+            };
+            var data_string = JSON.stringify(exportData, null, 2);
+            var blob = new Blob([data_string], { type: "application/json" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            var today = new Date().toISOString().slice(0, 10);
+            a.download = "독서_마인드맵_" + today + ".json";
+            a.href = url;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // [핵심 변경] 불러올 때 화살표 데이터(lines) 복원
+        function loadMindMap(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var importData = JSON.parse(e.target.result);
+                    // 새 버전(선 데이터 포함)인지 구 버전인지 체크
+                    if (importData.mind && importData.lines) {
+                        jm.show(importData.mind);
+                        window.customLines = importData.lines;
+                    } else {
+                        jm.show(importData);
+                        window.customLines = [];
+                    }
+                    initPanning(); // 화면 리셋 시 드래그 이동 재활성화
+                    setTimeout(drawCustomLines, 100);
+                } catch (err) {
+                    alert("올바르지 않은 마인드맵 파일입니다.");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+        function triggerFileInput() { document.getElementById('file-input').click(); }
+
+        // 단축키 로직
+        document.getElementById('jsmind_container').addEventListener('keydown', function(e) {
+            var activeEl = document.activeElement;
+            var isEditing = activeEl && (activeEl.tagName === '
