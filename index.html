@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>나만의 독서 마인드맵 (스마트 PDF 출력 추가)</title>
+    
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/style/jsmind.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jsmind@0.5.3/js/jsmind.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+
+    <style>
+        body { margin: 0; padding: 0; background-color: #f8f9fa; font-family: 'Noto Sans KR', sans-serif; overflow: hidden; }
+        #toolbar { padding: 12px 20px; background: #ffffff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; gap: 12px; align-items: center; z-index: 10; position: relative; flex-wrap: wrap; }
+        
+        #jsmind_container { width: 100vw; height: calc(100vh - 65px); background: #f4f5f7; position: relative; }
+        .jsmind-inner { cursor: grab; }
+        .jsmind-inner:active { cursor: grabbing; }
+        
+        select, button, .btn-label { padding: 7px 10px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 13px; cursor: pointer; outline: none; background-color: #fff; transition: all 0.2s; box-sizing: border-box; display: inline-block; text-align: center; }
+        button:hover, .btn-label:hover { background-color: #f0f0f0; border-color: #bbb; }
+        
+        .btn-save { background-color: #4ea1d3; color: white; border-color: #4ea1d3; font-weight: bold; }
+        .btn-save:hover { background-color: #3b8dbd; border-color: #3b8dbd; color: white; }
+        .btn-load { background-color: #6c757d; color: white; border-color: #6c757d; font-weight: bold; line-height: 1.15; margin: 0; }
+        .btn-load:hover { background-color: #5a6268; border-color: #5a6268; color: white; }
+        .btn-pdf { background-color: #e53935; color: white; border-color: #e53935; font-weight: bold; margin-left: 5px; }
+        .btn-pdf:hover { background-color: #c62828; border-color: #c62828; color: white; }
+        .btn-color { padding: 4px 8px; border: 2px solid; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .btn-color:hover { opacity: 0.7; background-color: #fff; }
+        .btn-zoom { background-color: #eef2f5; font-weight: bold; color: #333; border-color: #d1d9e0;}
+        .help-text { font-size: 13px; color: #555; margin-left: auto; background: #eef2f5; padding: 8px 15px; border-radius: 20px; }
+        
+        /* 기본 테마 및 검정색 글씨 강제 고정 */
+        #jsmind_container jmnode { color: #000000; }
+        #jsmind_container jmnode.node-root { background-color: #e53935 !important; color: #ffffff; border: 2px solid #e53935 !important; border-radius: 8px !important; font-weight: bold !important; box-shadow: 0 3px 6px rgba(0,0,0,0.16) !important; }
+        #jsmind_container jmnode.node-sub { background-color: #fdd835 !important; color: #000000; border: 2px solid #fdd835 !important; border-radius: 6px !important; font-weight: bold !important; }
+        #jsmind_container jmnode.node-ext { background-color: #ffffff !important; color: #000000; border: 2px solid #000000 !important; border-radius: 4px !important; }
+        #jsmind_container jmnode.multi-selected { outline: 3px solid #4ea1d3 !important; outline-offset: 2px; box-shadow: 0 0 10px rgba(78,161,211,0.5) !important; }
+
+        .jsmind-editor { min-width: 100px !important; font-family: inherit !important; border: 2px solid #4ea1d3 !important; border-radius: 4px; padding: 2px; color: #000000 !important; }
+        .font-noto jmnode { font-family: 'Noto Sans KR', sans-serif !important; }
+        .font-myeongjo jmnode { font-family: 'Nanum Myeongjo', serif !important; font-size: 15px !important; }
+        .font-pen jmnode { font-family: 'Nanum Pen Script', cursive !important; font-size: 22px !important; }
+        #selection-marquee { display: none; position: absolute; border: 1px dashed #4ea1d3; background: rgba(78, 161, 211, 0.2); z-index: 9999; pointer-events: none; }
+
+        /* PDF 인쇄(출력) 시 기본 뼈대 설정 */
+        @media print {
+            @page { size: landscape; margin: 0; }
+            body, html { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            #toolbar, #selection-marquee { display: none !important; }
+            #jsmind_container { width: 100vw !important; height: 100vh !important; background: #ffffff !important; border: none !important; margin: 0 !important; padding: 0 !important; }
+            .jsmind-inner { width: 100% !important; height: 100% !important; overflow: visible !important; position: absolute !important; top: 0; left: 0; }
+            jmnode.multi-selected { outline: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <label for="font-selector"><b>✍️ 폰트:</b></label>
+        <select id="font-selector" onchange="changeFont()">
+            <option value="font-noto">노토 산스</option>
+            <option value="font-myeongjo">나눔 명조</option>
+            <option value="font-pen">나눔 펜 스크립트</option>
+        </select>
+        
+        <div style="display: flex; gap: 5px; align-items: center; margin-left: 5px; border-left: 2px solid #eee; padding-left: 10px;">
+            <b>🎨 색상:</b>
+            <button class="btn-color" style="color: #000000; border-color: #000000;" onclick="changeTextColor('#000000')">검정</button>
+            <button class="btn-color" style="color: #e53935; border-
